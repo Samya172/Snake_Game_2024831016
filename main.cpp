@@ -127,16 +127,18 @@ void move_snake(SDL_Window* window){
 
 }
 
-int main(int argc,char* argv[]){
+int main(int argc, char* argv[]) {
 
-    if(!SDL_Init(SDL_INIT_VIDEO)){
+    std::srand(std::time(nullptr));
+
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         return 1;
     }
 
-    SDL_Window* window=nullptr;
-    SDL_Renderer* renderer=nullptr;
+    SDL_Window* window = nullptr;
+    SDL_Renderer* renderer = nullptr;
 
-    if(!SDL_CreateWindowAndRenderer(
+    if (!SDL_CreateWindowAndRenderer(
           "Snake Game",
           win_width,
           win_height,
@@ -148,85 +150,100 @@ int main(int argc,char* argv[]){
         return 1;
     }
 
-    int running = 1;
+    
 
-    while(running)
+    int running = 1;
+    Uint64 last_move = SDL_GetTicks();
+
+    while (running)
     {
         SDL_Event event;
-
-        while(SDL_PollEvent(&event))
+        while (SDL_PollEvent(&event))
         {
-            if(event.type==SDL_EVENT_QUIT)
+            if (event.type == SDL_EVENT_QUIT)
             {
-                running =0;
+                running = 0;
             }
 
-            if(event.type==SDL_EVENT_KEY_DOWN){
-                
-                switch(event.key.scancode){
-                    case SDL_SCANCODE_UP:{
-                        if(dir_y !=1){
-                            dir_x=0;
-                            dir_y=-1;
-                        }
+            if (event.type == SDL_EVENT_KEY_DOWN) {
+                switch (event.key.scancode) {
+                    case SDL_SCANCODE_UP: {
+                        if (dir_y != 1) { dir_x = 0; dir_y = -1; }
                         break;
                     }
-                    case SDL_SCANCODE_DOWN:{
-                        if(dir_y !=-1){
-                            dir_x=0;
-                            dir_y=1;
-                        }
+                    case SDL_SCANCODE_DOWN: {
+                        if (dir_y != -1) { dir_x = 0; dir_y = 1; }
                         break;
                     }
-                    case SDL_SCANCODE_LEFT:{
-                        if(dir_x !=1){
-                            dir_x=-1;
-                            dir_y=0;
-                        }
+                    case SDL_SCANCODE_LEFT: {
+                        if (dir_x != 1) { dir_x = -1; dir_y = 0; }
                         break;
                     }
-                    case SDL_SCANCODE_RIGHT:{
-                        if(dir_x !=-1){
-                            dir_x=1;
-                            dir_y=0;
-                        }
+                    case SDL_SCANCODE_RIGHT: {
+                        if (dir_x != -1) { dir_x = 1; dir_y = 0; }
                         break;
                     }
+                    default:
+                        break;
                 }
-
             }
         }
 
+        Uint64 now = SDL_GetTicks();
+        if (now - last_move > 110) {
+            move_snake(window);
+            last_move = now;
+        }
+
         
-
-
-
-
-
-
-
-
-
-        SDL_SetRenderDrawColor(renderer,20,20,20,SDL_ALPHA_OPAQUE);
-
+        SDL_SetRenderDrawColor(renderer, 20, 20, 20, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
 
-        SDL_SetRenderDrawColor(renderer,35,35,35,SDL_ALPHA_OPAQUE);
-
-        for(int x=0;x<win_width;x+=cell){
-            SDL_RenderLine(renderer,x,0,x,win_width);
+       
+        SDL_SetRenderDrawColor(renderer, 35, 35, 35, SDL_ALPHA_OPAQUE);
+        for (int x = 0; x < win_width; x += cell) {
+            SDL_RenderLine(renderer, x, 0, x, win_height); // Fixed: bottom Y should target win_height
         }
-
-        for(int y=0;y<win_height;y+=cell){
-            SDL_RenderLine(renderer,0,y,win_height,y);
-        }
-
 
         
+        for (int y = 0; y < win_height; y += cell) {
+            SDL_RenderLine(renderer, 0, y, win_width, y);  // Fixed: right X should target win_width
+        }
 
+        
+        SDL_FRect food_rect;
+        food_rect.x = food_x * cell + 2;
+        food_rect.y = food_y * cell + 2;
+        food_rect.w = cell - 4;
+        food_rect.h = cell - 4;
+        SDL_SetRenderDrawColor(renderer, 255, 65, 65, SDL_ALPHA_OPAQUE);
+        SDL_RenderFillRect(renderer, &food_rect);
 
-    }
+       
+        SDL_FRect rect;
+        rect.w = cell - 2;
+        rect.h = cell - 2;
 
+        for (int i = 0; i < snake_lenght; i++) {
+            rect.x = snake[i].x * cell + 1;
+            rect.y = snake[i].y * cell + 1;
 
-    
+            if (i == 0) {
+                SDL_SetRenderDrawColor(renderer, 255, 225, 50, SDL_ALPHA_OPAQUE); // Yellow Head
+            } else {
+                SDL_SetRenderDrawColor(renderer, 0, 225, 50, SDL_ALPHA_OPAQUE);  // Green Body
+            }
+            SDL_RenderFillRect(renderer, &rect);
+        }
+
+       
+        
+        
+
+    } 
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
+    return 0;
 }
