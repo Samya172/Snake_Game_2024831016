@@ -30,7 +30,50 @@ int dir_y=0;
 
 int score=0;
 
+void update_title(SDL_Window* window){
+
+    char title[100];
+
+    std :: sprintf(title,"Snake Game | Score: %d",score);
+
+    SDL_SetWindowTitle(window,title);
+}
+
+void food(){
+    int valid = 0;
+
+    while(!valid){
+        valid =1;
+
+        food_x= std :: rand()% width;
+        food_y= std :: rand()% height;
+
+        for(int i=0;i<snake_lenght;i++){
+            if(snake[i].x == food_x && snake[i].y==food_y)
+            {
+                valid =0;
+                break;
+            }
+        }
+    }
+}
+
 void reset(SDL_Window* window){
+    snake[0]={5,5};
+    snake[1]={4,5};
+    snake[2]={3,5};
+
+    snake_lenght = 3;
+
+    dir_x=1;
+    dir_y=0;
+
+    score=0;
+
+    food();
+
+    update_title(window);
+
 
 }
 
@@ -60,6 +103,10 @@ void move_snake(SDL_Window* window){
 
         score++;
 
+        food();
+
+        update_title(window);
+
 
 
 
@@ -70,6 +117,8 @@ void move_snake(SDL_Window* window){
         if(snake[0].x==snake[i].x && snake[0].y==snake[i].y)
         {
             SDL_Delay(500);
+
+            reset(window);
 
             return;
         }
